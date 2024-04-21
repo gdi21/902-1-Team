@@ -1,56 +1,134 @@
 package test;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 public class Elevator {
-	
-	// field : 
-	private static int lastFl = 0; // 종착 층
-	private static int currentFl = 0; // 현재 층
-	private static String currentDr = null; // 문 상태
-	private static int enterFl = 0; // 현재 입력한 층
-	private static String moveDr = null; // 현재 엘리베이터 상태
-	// 층 문자열? 배열? class?
-	
-	
-	// constructor : 
-	
-	// method : 
-	public static void goUp(int highestFl) { // lastFloor까지 상승
-		lastFl = highestFl;
-	}
-	
-	public static void goDown(int lowestFl) { // lastFloor까지 하강
-		lastFl = lowestFl;
-	}
-	
-	public static void stop(int asdf) {
-		// currentFl가 움직이면서 층 모임 中 하나랑 값이 같으면 멈춤
-	}
-	
-	// 표시*****
-	public static void currentFloor(int currentFl, int lastFl) { // 현재 층 + 상승/하강 표시
-		System.out.println(currentFl);
-		if(currentFl < lastFl) {
-			System.out.println("올라가는 중");
-		} else if(lastFl < currentFl) {
-			System.out.println("내려가는 중");
-		} else {
-			System.out.println("표시 X");
-		}
-	}
-	// 표시*****
-	public static void selectedFloor() { // 입력 받은 모든 층 표시
-		// 층 모임 모두 출력
-	}
+    private int currentFloor;
+    private Direction direction;
+    private final int MAX_FLOORS = 15;
+    private final int MIN_FLOORS = 1;
+    private Integer[] floors;
 
-	public static void openDoor() { // 문 상태 : 열림
-		 currentDr = "열림";
-	}
+    public void setFloors(Integer[] floors) {
+        this.floors = floors;
+    }
 
-	public static void closeDoor() { // 문 상태 : 닫힘
-		 currentDr = "닫힘";
-	}
-	// 층 입력
-	public static void enterFloor() { // 층 입력
-		// 층 모임 + enterFl
-	}
+    public Elevator() {
+        currentFloor = 1;
+        direction = Direction.NONE;
+    }
+
+    public void move(Integer[] floors) {
+        setFloors(floors);
+
+        if(direction == Direction.UP){
+            Arrays.sort(this.floors);
+        } else if(direction == Direction.DOWN){
+            Arrays.sort(this.floors, Collections.reverseOrder());
+        }
+
+        for (int floor : this.floors) {
+            if (floor > currentFloor && floor <= MAX_FLOORS) {
+                if (direction == Direction.DOWN) {
+                    System.out.println("엘리베이터가 내려가는 중입니다, 올라갈 수 없습니다.");
+                    continue;
+                }
+                moveUp(floor, floors);
+            } else if (floor < currentFloor && floor >= MIN_FLOORS) {
+                if (direction == Direction.UP) {
+                    System.out.println("엘리베이터가 올라가는 중입니다, 내려갈 수 없습니다.");
+                    continue;
+                }
+                moveDown(floor, floors);
+            } else if (floor == currentFloor) {
+                System.out.println("이미 " + currentFloor + "층입니다.");
+            } else {
+                System.out.println("잘못된 층입니다: " + floor);
+            }
+        }
+    }
+
+    private void moveUp(int targetFloor, Integer[] floors) {
+        direction = Direction.UP;
+        while (currentFloor < targetFloor) {
+            currentFloor++;
+            System.out.println(currentFloor + "층.....");
+            if (currentFloor == MAX_FLOORS) {
+                if (hasMoreFloorsToVisitInDirection(targetFloor, Direction.UP)) {
+                    initializeArray();
+                    break;
+                } else{
+                    direction = Direction.DOWN;
+                }
+            }
+            if (Arrays.asList(floors).contains(currentFloor)) {
+                stopAtFloor(currentFloor);
+            }
+        }
+    }
+
+    private void moveDown(int targetFloor, Integer[] floors) {
+        direction = Direction.DOWN;
+        while (currentFloor > targetFloor) {
+            currentFloor--;
+            System.out.println(currentFloor + "층.....");
+            if (currentFloor == MIN_FLOORS) {
+                if (hasMoreFloorsToVisitInDirection(targetFloor, Direction.DOWN)) {
+                    initializeArray();
+                    break;
+                }
+                direction = Direction.UP;
+            }
+            if (Arrays.asList(floors).contains(currentFloor)) {
+                stopAtFloor(currentFloor);
+            }
+        }
+    }
+
+    private boolean hasMoreFloorsToVisitInDirection(int targetFloor, Direction dir) {
+        if (dir == Direction.UP) {
+            return Collections.max(Arrays.asList(floors)) > targetFloor;
+        } else if (dir == Direction.DOWN) {
+            return Collections.min(Arrays.asList(floors)) < targetFloor;
+        }
+        return false;
+    }
+
+    private void initializeArray() {
+        floors = new Integer[0];
+    }
+
+    private void stopAtFloor(int floor) {
+        openDoor();
+        closeDoor();
+        displayCurrentFloorAndDirection();
+    }
+
+    private void openDoor() {
+        System.out.println(currentFloor + "층입니다. " + "문이 열립니다...");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeDoor() {
+        System.out.println("문이 닫힙니다...");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displayCurrentFloorAndDirection() {
+        System.out.print(currentFloor + "층입니다.");
+        if (direction.equals(Direction.UP)) {
+            System.out.println("올라갑니다.");
+        } else if(direction.equals(Direction.DOWN)){
+            System.out.println("내려갑니다.");
+        }
+    }
 }
