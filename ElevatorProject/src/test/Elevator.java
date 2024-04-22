@@ -19,7 +19,7 @@ public class Elevator {
     //생성자
     public Elevator() {
         currentFloor = 1;
-        direction = Direction.NONE;
+        direction = Direction.UP;
     }
 
     //메서드
@@ -40,11 +40,6 @@ public class Elevator {
             } else {
                 System.out.println("잘못된 층입니다: " + floor);
             }
-        }
-
-        if (floors.length > 0 && floors[floors.length - 1] == currentFloor) {
-            initializeArray();
-            direction = Direction.NONE;
         }
     }
 
@@ -91,6 +86,7 @@ public class Elevator {
     
             if (currentFloor == floors[floors.length - 1]) {
                 initializeArray();
+                direction = Direction.NONE;
                 break;
             }
     
@@ -108,7 +104,7 @@ public class Elevator {
         }
     }
 
-    //입력값 검증 메서드
+    //배열 초기화 메서드
     private void initializeArray() {
         floors = new Integer[0];
     }
