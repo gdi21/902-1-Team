@@ -4,7 +4,7 @@ public class ElevatorVanilla {
 
 	public static void main(String[] args) {
 /*
-엘리베이터 제어 프로그램 : 
+엘리베이터 제어 프로그램 :    
 		기능 : 
 			1. 엘리베이터 작동
 				1.1. 상승 > 눌려진 최고 층 수에 도달할 때까지 무조건 상승 유지
