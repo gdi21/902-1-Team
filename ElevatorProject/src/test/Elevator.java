@@ -1,143 +1,211 @@
 package test;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 public class Elevator {
-	//필드
-    private int currentFloor;
-    private Direction direction;
-    private final int MAX_FLOORS = 15;
-    private final int MIN_FLOORS = 1;
-    private Integer[] floors;
 
-    //setter
-    public void setFloors(Integer[] floors) {
-        this.floors = floors;
+    // 필드 :
+    static int currentFl = 0; // "현재 층"
+    private static int minFl = 0; // "최저 층"
+    private static int maxFl = 10; // "최고 층"
+    private static int[] allFl = new int[maxFl]; // "모든 층 배열"; 1 : 선택된 층
+    private static int targetFl = 0; // "목표 층"
+    private static Integer[] inputFls = null; // "입력 받은 층들"
+    private static Integer[] reInputFls = null; // 엘레베이터 동작 中 inputFls를 재정의한 배열
+    private static int reCountFl; // 엘레베이터 동작 中 inputFls를 재정의 할 때 사용하는 변수
+
+    // 게터 :
+    public static int getCurrentFl() {
+        return currentFl;
     }
 
-    //생성자
-    public Elevator() {
-        currentFloor = 1;
-        direction = Direction.UP;
+    public static int getMinFl() {
+        return minFl;
     }
 
-    //메서드
-    
-    //이동의 총괄메서드
-    public void move(Integer[] requestedFloors) throws InterruptedException {
-        setFloors(requestedFloors);
-    
-        sortFloors();
-    
-        for (int floor : this.floors) {
-            if (floor > currentFloor && floor <= MAX_FLOORS) {
-                handleMoveUp(floor);
-            } else if (floor < currentFloor && floor >= MIN_FLOORS) {
-                handleMoveDown(floor);
-            } else if (floor == currentFloor) {
-                System.out.println("이미 " + currentFloor + "층입니다.");
+    public static int getMaxFl() {
+        return maxFl;
+    }
+
+    public static int[] getAllFl() {
+        return allFl;
+    }
+
+    public static int getTargetFl() {
+        return targetFl;
+    }
+
+    public static Integer[] getInputFls() {
+        return inputFls;
+    }
+
+    public static Integer[] getReInputFls() {
+        return reInputFls;
+    }
+
+    public static int getReCountFl() {
+        return reCountFl;
+    }
+
+    // 세터 :
+    public void setCurrentFl(int currentFl) {
+        this.currentFl = currentFl;
+    }
+
+    public void setMinFL(int minFl) {
+        this.minFl = minFl;
+    }
+
+    public void setMaxFl(int maxFl) {
+        this.maxFl = maxFl;
+    }
+
+    public void setAllFl(int[] allFl) {
+        this.allFl = allFl;
+    }
+
+    public void setTargetFl(int targetFl) {
+        this.targetFl = targetFl;
+    }
+
+    public void setInputFls(Integer[] inputFls) {
+        this.inputFls = inputFls;
+    }
+
+    public void setReInputFls(Integer[] reInputFls) {
+        this.reInputFls = reInputFls;
+    }
+
+    public void setReCountFl(int reCountFl) {
+        this.reCountFl = reCountFl;
+    }
+
+    // 기본생성자 :
+    // 생성자 :
+
+    // 메써드 :
+    public static void selectedFloors(Integer[] inputFls) { // "입력 받은 층들"을 "모든 층 배열"에 1로 입력
+        for (int i = 0; i < inputFls.length; i++) {
+            allFl[inputFls[i]] = 1;
+        }
+    }
+
+    public static void printSelectedFloors() { // "모든 층 배열" 출력*****
+        System.out.print("[ ");
+        for (int i = 0; i < allFl.length; i++) {
+            if (allFl[i] == 1) {
+                System.out.print(i + " ");
+            }
+        }
+        System.out.print("]" + "\n");
+    }
+
+    public static void ascendSetTargetFloor() { // 상승 시 "목표 층" 설정
+        for (int i = currentFl; i < maxFl; i++) {
+            if (allFl[i] == 1) {
+                targetFl = i; // "목표 층" : "입력 받은 층들" 中 최고 층
+            }
+        }
+    }
+
+    public static void descendSetTargetFloor() { // 하강 시 "목표 층" 설정
+        for (int i = currentFl; minFl <= i; i--) {
+            if (allFl[i] == 1) {
+                targetFl = i; // "목표 층" : "입력 받은 층들" 中 최저 층
+            }
+        }
+    }
+
+    public static int ascend() throws InterruptedException { // "현재 층"에서 "목표 층"까지 상승
+        System.out.println("\t" + "<올라갑니다>");
+        Thread.sleep(250);
+        for (int i = currentFl; i <= targetFl; i++) {
+            if (allFl[i] == 0) {
+                System.out.print("[" + i + " ↑]" + "\t" + "\t" + "\t");
+                printSelectedFloors();
+                Thread.sleep(250);
             } else {
-                System.out.println("잘못된 층입니다: " + floor);
+                System.out.print("[" + i + " ↑]" + "\t" + "\t" + "\t");
+                printSelectedFloors();
+                Thread.sleep(250);
+                alertFl(i);
+                door();
             }
         }
+        currentFl = targetFl;
+        return currentFl;
     }
 
-    
-    //입력된 층수를 저장한 배열을 정렬
-    private void sortFloors() {
-        if (direction == Direction.UP) {
-            Arrays.sort(this.floors);
-        } else if (direction == Direction.DOWN) {
-            Arrays.sort(this.floors, Collections.reverseOrder());
-        }
-    }
-    
-    //상승 핸들
-    private void handleMoveUp(int targetFloor) throws InterruptedException {
-    	System.out.println("올라갑니다");
-        direction = Direction.UP;
-        moveElevator(targetFloor);
-    }
-    
-    //하강 핸들
-    private void handleMoveDown(int targetFloor) throws InterruptedException {
-    	System.out.println("내려갑니다");
-        direction = Direction.DOWN;
-        moveElevator(targetFloor);
-    }
-
-    
-    //이동 기능을 구현한 메서드
-    private void moveElevator(int targetFloor) throws InterruptedException {
-        while (currentFloor != targetFloor) {
-            if (direction == Direction.UP) {
-                currentFloor++;
-            } else if (direction == Direction.DOWN) {
-                currentFloor--;
-            }
-    
-            System.out.println(currentFloor + "층.....");
-            // Thread.sleep(1000); // Uncomment this line if you want to add a delay
-    
-            if (Arrays.asList(floors).contains(currentFloor)) {
-                stopAtFloor(currentFloor);
-            }
-    
-            if (currentFloor == floors[floors.length - 1]) {
-                initializeArray();
-                direction = Direction.NONE;
-                break;
-            }
-    
-            if (currentFloor == MAX_FLOORS) {
-                direction = Direction.DOWN;
-                initializeArray();
-                break;
-            }
-    
-            if (currentFloor == MIN_FLOORS) {
-                direction = Direction.UP;
-                initializeArray();
-                break;
+    public static int descend() throws InterruptedException { // "현재 층"에서 "목표 층"까지 하강
+        System.out.println("\t" + "<내려갑니다>");
+        Thread.sleep(250);
+        for (int i = currentFl; targetFl <= i; i--) {
+            if (allFl[i] == 0) {
+                System.out.print("[" + i + " ↓]" + "\t" + "\t" + "\t");
+                printSelectedFloors();
+                Thread.sleep(250);
+            } else {
+                System.out.print("[" + i + " ↓]" + "\t" + "\t" + "\t");
+                printSelectedFloors();
+                Thread.sleep(250);
+                alertFl(i);
+                door();
             }
         }
+        currentFl = targetFl;
+        return currentFl;
     }
 
-    //배열 초기화 메서드
-    private void initializeArray() {
-        floors = new Integer[0];
+    public static void alertFl(int currentFl) throws InterruptedException { // "목표 층" 도착 알림
+        System.out.print("\t" + "<" + currentFl + "층 입니다>" + "\t");
+        allFl[currentFl] = 0; // 도착 후, 해당 층 0 대입
+        printSelectedFloors();
+        Thread.sleep(250);
     }
 
-    //멈춤 메서드
-    private void stopAtFloor(int floor) {
+    public static void door() throws InterruptedException {
         openDoor();
+        keepDoorOpen();
         closeDoor();
-        displayCurrentFloorAndDirection();
     }
 
-    //문 열림
-    private void openDoor() {
-        System.out.println(currentFloor + "층입니다. " + "문이 열립니다...");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public static Integer[] reInputFls(int countFl) { // inputFls를 재정의하는 메써드
+        reInputFls = new Integer[countFl];
+        for (int i = 0; i < maxFl; i++) {
+            if (allFl[i] == 1) {
+                reInputFls[reCountFl] = i;
+                reCountFl++;
+            }
         }
+        return reInputFls;
     }
 
-    //문 닫힘
-    private void closeDoor() {
-        System.out.println("문이 닫힙니다...");
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public static void openDoor() throws InterruptedException { // "문 열림"
+        System.out.println("\t" + "<문이 열립니다>" + "\n" + "\t" + "[***|***]");
+        Thread.sleep(250);
+        System.out.println("\t" + "[**| |**]");
+        Thread.sleep(250);
+        System.out.println("\t" + "[*|   |*]");
+        Thread.sleep(250);
+        System.out.print("\t" + "[|     |]");
+        Thread.sleep(250);
+    }
+
+    public static void keepDoorOpen() throws InterruptedException { // 문을 5초 동안 열린 채로 유지
+        System.out.print("\t");
+        for (int i = 0; i < 4; i++) {
+            System.out.print((" ."));
+            Thread.sleep(250);
         }
+        System.out.println(" .");
     }
 
-    //현재 층수 출력
-    private void displayCurrentFloorAndDirection() {
-        System.out.println("현재 층수: " + currentFloor + "층");
+    public static void closeDoor() throws InterruptedException { // "문 닫힘"
+        System.out.println("\t" + "<문이 닫힙니다>" + "\n" + "\t" + "[|     |]");
+        Thread.sleep(250);
+        System.out.println("\t" + "[*|   |*]");
+        Thread.sleep(250);
+        System.out.println("\t" + "[**| |**]");
+        Thread.sleep(250);
+        System.out.println("\t" + "[***|***]");
+        Thread.sleep(250);
     }
 }
